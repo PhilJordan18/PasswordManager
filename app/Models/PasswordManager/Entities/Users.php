@@ -2,14 +2,13 @@
 
 namespace Models\PasswordManager\Entities;
 
-use AllowDynamicProperties;
 use Models\Core\Entity;
 
-#[AllowDynamicProperties] class Users extends Entity
+class Users extends Entity
 {
     public int $id;
-    public string $firstName;
-    public string $lastName;
+    public string $firstname;
+    public string $lastname;
     public string $username;
     public string $password;
     public string $email;

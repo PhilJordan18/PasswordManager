@@ -8,10 +8,7 @@ use Exception;
 use Models\Exceptions\FormException;
 use Models\PasswordManager\Services\TokenServices;
 use Models\PasswordManager\Services\UserServices;
-use Models\PasswordManager\Validators\UserValidator;
 use Random\RandomException;
-use Zephyrus\Application\Form;
-use Zephyrus\Core\Session;
 use Zephyrus\Network\Response;
 use Zephyrus\Network\Router\Get;
 use Zephyrus\Network\Router\Post;
@@ -21,7 +18,6 @@ class AuthenticationController extends Controller
     #[Get("/authentication")]
     public function authenticate(): Response
     {
-        error_log("Accès à /authentication, session: " . json_encode(getUserSession()));
         if (getUserSession()) {
             return $this->redirect('/dashboard');
         }
@@ -38,13 +34,9 @@ class AuthenticationController extends Controller
     #[Post("/register")]
     public function register(): Response
     {
-        error_log("Soumission du formulaire d'inscription");
         $form = $this->buildForm();
-        error_log("Données du formulaire: " . json_encode($form->getFields()));
 
         try {
-            UserValidator::assert($form);
-
             $user = UserServices::register($form);
             $token = TokenServices::generateToken($user->id);
             setSession($user->id, $token);
@@ -53,7 +45,6 @@ class AuthenticationController extends Controller
             return $this->redirect('/dashboard');
 
         } catch (FormException $e) {
-            error_log("Erreur de validation: " . json_encode($form->getErrorMessages()));
             return $this->render('PasswordManager/authentication', [
                 'title' => 'Connexion / Inscription',
                 'register_errors' => $form->getErrorMessages(),
@@ -64,7 +55,6 @@ class AuthenticationController extends Controller
             ]);
 
         } catch (RandomException $e) {
-            error_log("Erreur RandomException: " . $e->getMessage());
             return $this->render('PasswordManager/authentication', [
                 'title' => 'Connexion / Inscription',
                 'register_error' => 'Échec de l\'inscription en raison d\'une erreur interne',
@@ -74,7 +64,6 @@ class AuthenticationController extends Controller
             ]);
 
         } catch (Exception $e) {
-            error_log("Erreur générale: " . $e->getMessage());
             return $this->render('PasswordManager/authentication', [
                 'title' => 'Connexion / Inscription',
                 'register_error' => 'Échec de l\'inscription : ' . $e->getMessage(),
@@ -95,7 +84,6 @@ class AuthenticationController extends Controller
         error_log("Soumission du formulaire de connexion");
         $form = $this->buildForm();
         try {
-            UserValidator::assertLogin($form);
 
             $username = $form->getValue('username');
             $password = $form->getValue('password');
@@ -104,11 +92,9 @@ class AuthenticationController extends Controller
             if ($user) {
                 $token = TokenServices::generateToken($user->id);
                 setSession($user->id, $token);
-                error_log("Session définie pour connexion: " . json_encode(getUserSession()));
                 return $this->redirect('/dashboard');
             }
 
-            error_log("Échec de la connexion: identifiants invalides");
             return $this->render('PasswordManager/authentication', [
                 'title' => 'Connexion / Inscription',
                 'login_error' => 'Identifiants invalides',
@@ -118,7 +104,6 @@ class AuthenticationController extends Controller
             ]);
 
         } catch (FormException $e) {
-            error_log("Erreur de validation login: " . json_encode($form->getErrorMessages()));
             return $this->render('PasswordManager/authentication', [
                 'title' => 'Connexion / Inscription',
                 'login_errors' => $form->getErrorMessages(),
