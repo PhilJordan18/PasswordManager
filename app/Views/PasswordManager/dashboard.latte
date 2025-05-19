@@ -1,0 +1,179 @@
+{varType string $title}
+{varType string $nonce}
+{varType string $activeSection}
+
+{layout layouts/main.latte}
+
+{block content}
+    {if !isset($activeSection)}
+        {var $activeSection = 'passwords'}
+    {/if}
+    <div class="row g-0">
+        {include 'layouts/components/dashboard/nav.latte', activeSection => $activeSection}
+
+        <main class="main-content col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            {include 'layouts/components/dashboard/header.latte'}
+
+            {if $activeSection === 'dashboard'}
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        {include 'layouts/components/dashboard/stats-card.latte', [
+                        'title' => 'Mots de passe',
+                        'value' => '42',
+                        'icon' => 'lock',
+                        'color' => 'primary'
+                        ]}
+                    </div>
+                    <div class="col-md-4">
+                        {include 'layouts/components/dashboard/stats-card.latte', [
+                        'title' => 'Faibles',
+                        'value' => '5',
+                        'icon' => 'alert-triangle',
+                        'color' => 'danger'
+                        ]}
+                    </div>
+                    <div class="col-md-4">
+                        {include 'layouts/components/dashboard/stats-card.latte', [
+                        'title' => 'Moyens',
+                        'value' => '12',
+                        'icon' => 'shield',
+                        'color' => 'warning'
+                        ]}
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Sécurité des mots de passe</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {include 'layouts/components/dashboard/password-strength.latte'}
+                            </div>
+                            <div class="col-md-6">
+                                {include 'layouts/components/dashboard/lists/weak-passwords.latte'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Activité récente</h5>
+                    </div>
+                    <div class="card-body">
+                        {include 'layouts/components/dashboard/tables/activity.latte'}
+                    </div>
+                </div>
+
+            {elseif $activeSection === 'passwords'}
+                <div class="card">
+                    <div class="card-header bg-white border-bottom">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0">Mes comptes</h5>
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+                                <i class="bi bi-plus-circle"></i> Ajouter un compte
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {include 'layouts/components/dashboard/tables/accounts-table.latte'}
+                    </div>
+                </div>
+
+            {elseif $activeSection === 'security'}
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Analyse de sécurité</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {include 'layouts/components/dashboard/password-strength.latte'}
+                            </div>
+                            <div class="col-md-6">
+                                {include 'layouts/components/dashboard/lists/weak-passwords.latte'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Recommandations</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">Mettre à jour les mots de passe faibles</li>
+                            <li class="list-group-item">Activer l'authentification à deux facteurs</li>
+                            <li class="list-group-item">Vérifier les activités suspectes</li>
+                        </ul>
+                    </div>
+                </div>
+
+            {elseif $activeSection === 'settings'}
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Paramètres du compte</h5>
+                    </div>
+                    <div class="card-body">
+                        <form>
+                            <div class="mb-3">
+                                <label class="form-label">Nom d'utilisateur</label>
+                                <input type="text" class="form-control" value="utilisateur123">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="email@exemple.com">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Mot de passe</label>
+                                <input type="password" class="form-control" placeholder="Laisser vide pour ne pas changer">
+                            </div>
+                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                        </form>
+                    </div>
+                </div>
+            {/if}
+        </main>
+    </div>
+
+    {if $activeSection === 'passwords'}
+        {include 'layouts/components/dashboard/modals/add-account.latte'}
+    {/if}
+
+    <script nonce={$nonce}>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            const passwordToggles = document.querySelectorAll('.password-toggle');
+            passwordToggles.forEach(toggle => {
+                toggle.addEventListener('click', () => {
+                    const target = document.querySelector(toggle.dataset.target);
+                    const icon = toggle.querySelector('i');
+
+                    if (target.type === 'password') {
+                        target.type = 'text';
+                        icon.classList.remove('bi-eye');
+                        icon.classList.add('bi-eye-slash');
+                    } else {
+                        target.type = 'password';
+                        icon.classList.remove('bi-eye-slash');
+                        icon.classList.add('bi-eye');
+                    }
+                });
+            });
+
+            const sidebarToggle = document.querySelector('.sidebar-toggle');
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', () => {
+                    document.getElementById('sidebar').classList.toggle('d-none');
+                });
+            }
+        });
+    </script>
+{/block}

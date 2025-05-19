@@ -1,0 +1,84 @@
+{varType string|null $register_error}
+{varType array $register_errors}
+{varType array $register_values}
+
+<div class="tab-pane fade" id="register" role="tabpanel" aria-labelledby="register-tab">
+    <form method="POST" action="/register" id="registerForm" novalidate>
+        {if $register_error}
+            <div class="alert alert-danger">{$register_error}</div>
+        {/if}
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="firstName" class="form-label">Prénom</label>
+                <input type="text" class="form-control {if isset($register_errors['firstname'])}is-invalid{/if}"
+                       id="firstName" name="firstname"
+                       value="{if isset($register_values['firstname'])}{$register_values['firstname']}{/if}" required>
+                {if isset($register_errors['firstname'])}
+                    <div class="invalid-feedback">{$register_errors['firstname']}</div>
+                {/if}
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="lastName" class="form-label">Nom</label>
+                <input type="text" class="form-control {if isset($register_errors['lastname'])}is-invalid{/if}"
+                       id="lastName" name="lastname"
+                       value="{if isset($register_values['lastname'])}{$register_values['lastname']}{/if}" required>
+                {if isset($register_errors['lastname'])}
+                    <div class="invalid-feedback">{$register_errors['lastname']}</div>
+                {/if}
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="registerUsername" class="form-label">Nom d'utilisateur</label>
+            <input type="text" class="form-control {if isset($register_errors['username'])}is-invalid{/if}"
+                   id="registerUsername" name="username"
+                   value="{if isset($register_values['username'])}{$register_values['username']}{/if}" required>
+            {if isset($register_errors['username'])}
+                <div class="invalid-feedback">{$register_errors['username']}</div>
+            {/if}
+        </div>
+
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control {if isset($register_errors['email'])}is-invalid{/if}"
+                   id="email" name="email"
+                   value="{if isset($register_values['email'])}{$register_values['email']}{/if}" required>
+            {if isset($register_errors['email'])}
+                <div class="invalid-feedback">{$register_errors['email']}</div>
+            {/if}
+        </div>
+
+        <div class="mb-3">
+            <label for="phone" class="form-label">Téléphone (optionnel)</label>
+            <input type="tel" class="form-control {if isset($register_errors['phone_number'])}is-invalid{/if}"
+                   id="phone" name="phone_number"
+                   value="{if isset($register_values['phone_number'])}{$register_values['phone_number']}{/if}">
+            {if isset($register_errors['phone_number'])}
+                <div class="invalid-feedback">{$register_errors['phone_number']}</div>
+            {/if}
+        </div>
+
+        <div class="mb-3">
+            <label for="registerPassword" class="form-label">Mot de passe</label>
+            <input type="password" class="form-control {if isset($register_errors['password'])}is-invalid{/if}"
+                   id="registerPassword" name="password" required>
+            {if isset($register_errors['password'])}
+                <div class="invalid-feedback">{$register_errors['password']}</div>
+            {/if}
+        </div>
+
+        <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirmer le mot de passe</label>
+            <input type="password" class="form-control {if isset($register_errors['confirmPassword'])}is-invalid{/if}"
+                   id="confirmPassword" name="confirmPassword" required>
+            {if isset($register_errors['confirmPassword'])}
+                <div class="invalid-feedback">{$register_errors['confirmPassword']}</div>
+            {/if}
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-dark btn-lg">S'inscrire</button>
+        </div>
+    </form>
+</div>

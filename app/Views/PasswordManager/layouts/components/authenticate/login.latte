@@ -1,0 +1,43 @@
+{varType string|null $login_error}
+{varType array $login_errors}
+{varType array $login_values}
+
+<div class="tab-pane fade show active" id="login" role="tabpanel" aria-labelledby="login-tab">
+    <form method="POST" action="/login" id="loginForm" novalidate>
+        {if $login_error}
+            <div class="alert alert-danger">{$login_error}</div>
+        {/if}
+
+        <div class="mb-3">
+            <label for="loginUsername" class="form-label">Nom d'utilisateur</label>
+            <input type="text" class="form-control {if isset($login_errors['username'])}is-invalid{/if}"
+                   id="loginUsername" name="username"
+                   value="{if isset($login_values['username'])}{$login_values['username']}{/if}" required>
+            {if isset($login_errors['username'])}
+                <div class="invalid-feedback">{$login_errors['username']}</div>
+            {/if}
+        </div>
+
+        <div class="mb-3">
+            <label for="loginPassword" class="form-label">Mot de passe</label>
+            <input type="password" class="form-control {if isset($login_errors['password'])}is-invalid{/if}"
+                   id="loginPassword" name="password" required>
+            {if isset($login_errors['password'])}
+                <div class="invalid-feedback">{$login_errors['password']}</div>
+            {/if}
+        </div>
+
+        <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="rememberMe" name="remember_me">
+            <label class="form-check-label" for="rememberMe">Se souvenir de moi</label>
+        </div>
+
+        <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg">Connexion</button>
+        </div>
+
+        <div class="text-center mt-3">
+            <a href="/forgot-password" class="text-decoration-none">Mot de passe oublié ?</a>
+        </div>
+    </form>
+</div>

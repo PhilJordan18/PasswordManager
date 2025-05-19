@@ -1,0 +1,8 @@
+-- INSERT INTO tokens (user_id, token, expires_at)
+-- VALUES (
+--            1,
+--            'abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567',
+--            NOW() + INTERVAL '1 hour'
+--        );
+--
+-- SELECT id FROM users WHERE username = 'john_doe';

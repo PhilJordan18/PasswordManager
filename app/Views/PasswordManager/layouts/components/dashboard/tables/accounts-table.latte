@@ -1,0 +1,49 @@
+<div class="table-responsive">
+    <table class="table table-hover">
+        <thead>
+        <tr>
+            <th>Application</th>
+            <th>Nom d'utilisateur</th>
+            <th>Mot de passe</th>
+            <th>Dernière mise à jour</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        {foreach $accounts as $account}
+            <tr>
+                <td>
+                    <div class="d-flex align-items-center">
+                        {if $account->app_icon}
+                            <img src="/assets/icons/{$account->app_icon}" width="24" height="24" class="me-2">
+                        {else}
+                            <i class="bi bi-app me-2"></i>
+                        {/if}
+                        {$account->app_name}
+                    </div>
+                </td>
+                <td>{$account->username}</td>
+                <td>
+                    <div class="input-group input-group-sm">
+                        <input type="password" value="********" class="form-control form-control-sm"
+                               id="pass_{$account->id}" readonly>
+                        <button class="btn btn-outline-secondary password-toggle" type="button"
+                                data-target="#pass_{$account->id}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </div>
+                </td>
+                <td>{$account->last_updated|date:'d/m/Y'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" title="Modifier" data-bs-toggle="tooltip">
+                        <i class="bi bi-pencil"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" title="Supprimer" data-bs-toggle="tooltip">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        {/foreach}
+        </tbody>
+    </table>
+</div>

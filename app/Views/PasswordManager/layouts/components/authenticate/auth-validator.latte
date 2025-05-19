@@ -1,0 +1,39 @@
+<script nonce={$nonce}>
+    document.addEventListener('DOMContentLoaded', function() {
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', function(event) {
+                if (!loginForm.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                loginForm.classList.add('was-validated');
+            }, false);
+        }
+
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            const password = document.getElementById('registerPassword');
+            const confirmPassword = document.getElementById('confirmPassword');
+
+            function validatePassword() {
+                if (password.value !== confirmPassword.value) {
+                    confirmPassword.setCustomValidity("Les mots de passe ne correspondent pas");
+                } else {
+                    confirmPassword.setCustomValidity('');
+                }
+            }
+
+            password.onchange = validatePassword;
+            confirmPassword.onkeyup = validatePassword;
+
+            registerForm.addEventListener('submit', function(event) {
+                if (!registerForm.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                registerForm.classList.add('was-validated');
+            }, false);
+        }
+    });
+</script>

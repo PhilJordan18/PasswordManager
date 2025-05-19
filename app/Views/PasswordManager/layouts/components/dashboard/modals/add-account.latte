@@ -1,0 +1,105 @@
+<div class="modal fade" id="addAccountModal" tabindex="-1" aria-labelledby="addAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addAccountModalLabel">Ajouter un compte</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addAccountForm">
+                    <div class="mb-3">
+                        <label for="appSelect" class="form-label">Application</label>
+                        <select class="form-select" id="appSelect" name="app_id" required>
+                            <option value="">Sélectionner une application</option>
+                            {foreach $applications as $app}
+                                <option value="{$app->id}">{$app->name}</option>
+                            {/foreach}
+                            <option value="other">Autre</option>
+                        </select>
+                        <div class="invalid-feedback" id="app_idError"></div>
+                    </div>
+                    <div class="mb-3 d-none" id="customAppContainer">
+                        <label for="customAppName" class="form-label">Nom de l'application</label>
+                        <input type="text" class="form-control" id="customAppName" name="custom_app_name">
+                        <div class="invalid-feedback" id="custom_app_nameError"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="accountUsername" class="form-label">Nom d'utilisateur/Email</label>
+                        <input type="text" class="form-control" id="accountUsername" name="username" required>
+                        <div class="invalid-feedback" id="usernameError"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="accountPassword" class="form-label">Mot de passe</label>
+                        <div class="input-group">
+                            <input type="password" class="form-control" id="accountPassword" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="generatePasswordBtn">
+                                <i class="bi bi-key"></i> Générer
+                            </button>
+                        </div>
+                        <div class="form-text">Utilisez notre générateur pour créer un mot de passe sécurisé</div>
+                        <div class="invalid-feedback" id="passwordError"></div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary" id="saveAccountBtn">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script nonce={$nonce}>
+    document.addEventListener('DOMContentLoaded', () => {
+        const appSelect = document.getElementById('appSelect');
+        const customAppContainer = document.getElementById('customAppContainer');
+        const saveAccountBtn = document.getElementById('saveAccountBtn');
+        const generatePasswordBtn = document.getElementById('generatePasswordBtn');
+        const accountPassword = document.getElementById('accountPassword');
+
+        appSelect.addEventListener('change', () => {
+            customAppContainer.classList.toggle('d-none', appSelect.value !== 'other');
+        });
+
+        generatePasswordBtn.addEventListener('click', async () => {
+            try {
+                const response = await fetch('/generate-password');
+                const data = await response.json();
+                accountPassword.value = data.password;
+            } catch (error) {
+                console.error('Erreur:', error);
+            }
+        });
+
+        saveAccountBtn.addEventListener('click', async () => {
+            document.querySelectorAll('.is-invalid').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+            document.querySelectorAll('.invalid-feedback').forEach(el => {
+                el.textContent = '';
+            });
+
+            try {
+                const formData = new FormData(document.getElementById('addAccountForm'));
+
+                const response = await fetch('/accounts', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload();
+                } else {
+                    if (data.error) {
+                        alert('Erreur: ' + data.error);
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Une erreur est survenue lors de l\'enregistrement');
+            }
+        });
+    });
+</script>
