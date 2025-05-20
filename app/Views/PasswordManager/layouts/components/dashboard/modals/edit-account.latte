@@ -1,17 +1,18 @@
 {varType array $applications}
 
-<div class="modal fade" id="addAccountModal" tabindex="-1" aria-labelledby="addAccountModalLabel" aria-hidden="true">
+<div class="modal fade" id="editAccountModal" tabindex="-1" aria-labelledby="editAccountModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="addAccountModalLabel">Ajouter un compte</h5>
+                <h5 class="modal-title" id="editAccountModalLabel">Modifier un compte</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="addAccountForm">
+                <form id="editAccountForm">
+                    <input type="hidden" id="editAccountId" name="account_id">
                     <div class="mb-3">
-                        <label for="appSelect" class="form-label">Application</label>
-                        <select class="form-select" id="appSelect" name="app_id" required>
+                        <label for="editAppSelect" class="form-label">Application</label>
+                        <select class="form-select" id="editAppSelect" name="app_id" required>
                             <option value="">Sélectionner une application</option>
                             {foreach $applications as $app}
                                 <option value="{$app->id}">{$app->name}</option>
@@ -20,21 +21,21 @@
                         </select>
                         <div class="invalid-feedback" id="app_idError"></div>
                     </div>
-                    <div class="mb-3 d-none" id="customAppContainer">
-                        <label for="customAppName" class="form-label">Nom de l'application</label>
-                        <input type="text" class="form-control" id="customAppName" name="custom_app_name">
+                    <div class="mb-3 d-none" id="editCustomAppContainer">
+                        <label for="editCustomAppName" class="form-label">Nom de l'application</label>
+                        <input type="text" class="form-control" id="editCustomAppName" name="custom_app_name">
                         <div class="invalid-feedback" id="custom_app_nameError"></div>
                     </div>
                     <div class="mb-3">
-                        <label for="accountUsername" class="form-label">Nom d'utilisateur/Email</label>
-                        <input type="text" class="form-control" id="accountUsername" name="username" required>
+                        <label for="editAccountUsername" class="form-label">Nom d'utilisateur/Email</label>
+                        <input type="text" class="form-control" id="editAccountUsername" name="username" required>
                         <div class="invalid-feedback" id="usernameError"></div>
                     </div>
                     <div class="mb-3">
-                        <label for="accountPassword" class="form-label">Mot de passe</label>
+                        <label for="editAccountPassword" class="form-label">Mot de passe</label>
                         <div class="input-group">
-                            <input type="password" class="form-control" id="accountPassword" name="password" required>
-                            <button class="btn btn-outline-secondary" type="button" id="generatePasswordBtn">
+                            <input type="password" class="form-control" id="editAccountPassword" name="password" required>
+                            <button class="btn btn-outline-secondary" type="button" id="editGeneratePasswordBtn">
                                 <i class="bi bi-key"></i> Générer
                             </button>
                         </div>
@@ -42,15 +43,15 @@
                         <div class="invalid-feedback" id="passwordError"></div>
                     </div>
                     <div class="mb-3">
-                        <label for="userPassword" class="form-label">Votre mot de passe</label>
-                        <input type="password" class="form-control" id="userPassword" name="user_password" required>
+                        <label for="editUserPassword" class="form-label">Votre mot de passe</label>
+                        <input type="password" class="form-control" id="editUserPassword" name="user_password" required>
                         <div class="invalid-feedback" id="user_passwordError"></div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-primary" id="saveAccountBtn">Enregistrer</button>
+                <button type="button" class="btn btn-primary" id="saveEditAccountBtn">Enregistrer</button>
             </div>
         </div>
     </div>
@@ -58,11 +59,11 @@
 
 <script n:syntax=off nonce={$nonce}>
     document.addEventListener('DOMContentLoaded', () => {
-        const appSelect = document.getElementById('appSelect');
-        const customAppContainer = document.getElementById('customAppContainer');
-        const saveAccountBtn = document.getElementById('saveAccountBtn');
-        const generatePasswordBtn = document.getElementById('generatePasswordBtn');
-        const accountPassword = document.getElementById('accountPassword');
+        const appSelect = document.getElementById('editAppSelect');
+        const customAppContainer = document.getElementById('editCustomAppContainer');
+        const saveAccountBtn = document.getElementById('saveEditAccountBtn');
+        const generatePasswordBtn = document.getElementById('editGeneratePasswordBtn');
+        const accountPassword = document.getElementById('editAccountPassword');
 
         appSelect.addEventListener('change', () => {
             customAppContainer.classList.toggle('d-none', appSelect.value !== 'other');
@@ -86,19 +87,20 @@
         });
 
         saveAccountBtn.addEventListener('click', async () => {
-            const form = document.getElementById('addAccountForm');
+            const form = document.getElementById('editAccountForm');
             document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
             document.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
 
             try {
                 const formData = new FormData(form);
-                const response = await fetch('/accounts', {
+                const accountId = document.getElementById('editAccountId').value;
+                const response = await fetch(`/accounts/${accountId}/update`, {
                     method: 'POST',
                     body: formData
                 });
                 const data = await response.json();
                 if (data.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('addAccountModal')).hide();
+                    bootstrap.Modal.getInstance(document.getElementById('editAccountModal')).hide();
                     window.location.reload();
                 } else {
                     if (data.error && typeof data.error === 'object') {

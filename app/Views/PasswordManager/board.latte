@@ -1,0 +1,310 @@
+{varType array $accounts}
+{varType array $applications}
+{varType int $userId}
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{$title}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/PasswordManager/css/styles.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/dashboard">Gestionnaire de Mots de Passe</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="/authentication">Déconnexion</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<div class="container mt-5">
+    <h1 class="mb-4">Tableau de bord</h1>
+
+    <!-- Bouton pour ajouter un compte -->
+    <div class="mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addAccountModal">
+            Ajouter un compte
+        </button>
+    </div>
+
+    <!-- Tableau des comptes -->
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Application</th>
+                <th>Nom d'utilisateur</th>
+                <th>Mot de passe</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            {foreach $accounts as $account}
+                <tr>
+                    <td>
+                        {if $account->app_icon}
+                            <img src="{$account->app_icon}" alt="{$account->app_name}" width="20" class="me-2">
+                        {/if}
+                                {$account->app_name}
+                    </td>
+                    <td>{$account->username}</td>
+                    <td>
+                        <input type="password" class="form-control password-field" value="{$account->password}" readonly>
+                        <button class="btn btn-sm btn-outline-secondary toggle-password mt-1">Afficher</button>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary share-password"
+                                data-account-id="{$account->id}"
+                                data-bs-toggle="modal"
+                                data-bs-target="#sharePasswordModal">
+                            Partager
+                        </button>
+                    </td>
+                </tr>
+            {else}
+                <tr>
+                    <td colspan="4" class="text-center">Aucun compte trouvé.</td>
+                </tr>
+            {/foreach}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Modal pour ajouter un compte -->
+    <div class="modal fade" id="addAccountModal" tabindex="-1" aria-labelledby="addAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addAccountModalLabel">Ajouter un compte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addAccountForm">
+                        <input type="hidden" name="user_id" value="{$userId}">
+                        <div class="mb-3">
+                            <label for="app_id" class="form-label">Application</label>
+                            <select class="form-select" id="app_id" name="app_id" required>
+                                <option value="">Sélectionner une application</option>
+                                {foreach $applications as $app}
+                                    <option value="{$app->id}">{$app->name}</option>
+                                {/foreach}
+                                <option value="other">Autre</option>
+                            </select>
+                        </div>
+                        <div class="mb-3" id="customAppField" style="display: none;">
+                            <label for="custom_app_name" class="form-label">Nom de l'application</label>
+                            <input type="text" class="form-control" id="custom_app_name" name="custom_app_name">
+                        </div>
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Nom d'utilisateur</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Mot de passe</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="password" name="password" required>
+                                <button type="button" class="btn btn-outline-secondary" id="generatePassword">
+                                    Générer
+                                </button>
+                            </div>
+                        </div>
+                        <div class="alert alert-danger d-none" id="addAccountError"></div>
+                        <button type="submit" class="btn btn-primary">Ajouter</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour partager un mot de passe -->
+    <div class="modal fade" id="sharePasswordModal" tabindex="-1" aria-labelledby="sharePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sharePasswordModalLabel">Partager un mot de passe</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="sharePasswordForm">
+                        <input type="hidden" name="account_id" id="shareAccountId">
+                        <input type="hidden" name="sender_id" value="{$userId}">
+                        <div class="mb-3">
+                            <label for="receiver_id" class="form-label">ID de l'utilisateur destinataire</label>
+                            <input type="number" class="form-control" id="receiver_id" name="receiver_id" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sender_password" class="form-label">Votre mot de passe</label>
+                            <input type="password" class="form-control" id="sender_password" name="sender_password" required>
+                        </div>
+                        <div class="alert alert-danger d-none" id="sharePasswordError"></div>
+                        <button type="submit" class="btn btn-primary">Partager</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour récupérer un mot de passe partagé -->
+    <div class="modal fade" id="retrievePasswordModal" tabindex="-1" aria-labelledby="retrievePasswordModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="retrievePasswordModalLabel">Récupérer un mot de passe partagé</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="retrievePasswordForm">
+                        <input type="hidden" name="receiver_id" value="{$userId}">
+                        <div class="mb-3">
+                            <label for="shared_id" class="form-label">ID du partage</label>
+                            <input type="number" class="form-control" id="shared_id" name="shared_id" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="receiver_password" class="form-label">Votre mot de passe</label>
+                            <input type="password" class="form-control" id="receiver_password" name="receiver_password" required>
+                        </div>
+                        <div class="alert alert-success d-none" id="retrievePasswordSuccess"></div>
+                        <div class="alert alert-danger d-none" id="retrievePasswordError"></div>
+                        <button type="submit" class="btn btn-primary">Récupérer</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Afficher/masquer les mots de passe
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', () => {
+            const input = button.previousElementSibling;
+            if (input.type === 'password') {
+                input.type = 'text';
+                button.textContent = 'Masquer';
+            } else {
+                input.type = 'password';
+                button.textContent = 'Afficher';
+            }
+        });
+    });
+
+    // Afficher le champ pour une application personnalisée
+    document.getElementById('app_id').addEventListener('change', function () {
+        const customAppField = document.getElementById('customAppField');
+        customAppField.style.display = this.value === 'other' ? 'block' : 'none';
+    });
+
+    // Générer un mot de passe
+    document.getElementById('generatePassword').addEventListener('click', async () => {
+        try {
+            const response = await fetch('/generate-password', { method: 'POST' });
+            const data = await response.json();
+            if (data.password) {
+                document.getElementById('password').value = data.password;
+            } else {
+                alert('Erreur lors de la génération du mot de passe');
+            }
+        } catch (error) {
+            alert('Erreur réseau : ' + error.message);
+        }
+    });
+
+    // Ajouter un compte
+    document.getElementById('addAccountForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const errorDiv = document.getElementById('addAccountError');
+        errorDiv.classList.add('d-none');
+
+        try {
+            const response = await fetch('/accounts', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert('Compte ajouté avec succès !');
+                window.location.reload(); // Recharger pour afficher le nouveau compte
+            } else {
+                errorDiv.textContent = data.error || 'Erreur lors de l\'ajout du compte';
+                errorDiv.classList.remove('d-none');
+            }
+        } catch (error) {
+            errorDiv.textContent = 'Erreur réseau : ' + error.message;
+            errorDiv.classList.remove('d-none');
+        }
+    });
+
+    // Partager un mot de passe
+    document.querySelectorAll('.share-password').forEach(button => {
+        button.addEventListener('click', () => {
+            document.getElementById('shareAccountId').value = button.dataset.accountId;
+        });
+    });
+
+    document.getElementById('sharePasswordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const errorDiv = document.getElementById('sharePasswordError');
+        errorDiv.classList.add('d-none');
+
+        try {
+            const response = await fetch('/share-password', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (response.ok) {
+                alert('Mot de passe partagé avec succès !');
+                bootstrap.Modal.getInstance(document.getElementById('sharePasswordModal')).hide();
+            } else {
+                errorDiv.textContent = data.error || 'Erreur lors du partage';
+                errorDiv.classList.remove('d-none');
+            }
+        } catch (error) {
+            errorDiv.textContent = 'Erreur réseau : ' + error.message;
+            errorDiv.classList.remove('d-none');
+        }
+    });
+
+    // Récupérer un mot de passe partagé
+    document.getElementById('retrievePasswordForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const successDiv = document.getElementById('retrievePasswordSuccess');
+        const errorDiv = document.getElementById('retrievePasswordError');
+        successDiv.classList.add('d-none');
+        errorDiv.classList.add('d-none');
+
+        try {
+            const response = await fetch(`/shared-password/${formData.get('shared_id')}?receiver_id=${formData.get('receiver_id')}&receiver_password=${encodeURIComponent(formData.get('receiver_password'))}`, {
+                method: 'GET'
+            });
+            const data = await response.json();
+            if (response.ok) {
+                successDiv.textContent = `Mot de passe récupéré : ${data.password}`;
+                successDiv.classList.remove('d-none');
+            } else {
+                errorDiv.textContent = data.error || 'Erreur lors de la récupération';
+                errorDiv.classList.remove('d-none');
+            }
+        } catch (error) {
+            errorDiv.textContent = 'Erreur réseau : ' + error.message;
+            errorDiv.classList.remove('d-none');
+        }
+    });
+</script>
+</body>
+</html>

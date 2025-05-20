@@ -70,7 +70,6 @@ class UserServices
 
         $user = Users::build($form->buildObject());
         $password = $form->getValue('password');
-        error_log("Utilisateur créé avec username: " . $user->username);
 
         // Générer une clé maître
         try {

@@ -1,3 +1,5 @@
+{varType array $accounts}
+
 <div class="table-responsive">
     <table class="table table-hover">
         <thead>
@@ -15,18 +17,18 @@
                 <td>
                     <div class="d-flex align-items-center">
                         {if $account->app_icon}
-                            <img src="/assets/icons/{$account->app_icon}" width="24" height="24" class="me-2">
+                            <img src="{$account->app_icon}" width="24" height="24" class="me-2" alt="{$account->app_name}">
                         {else}
                             <i class="bi bi-app me-2"></i>
                         {/if}
-                        {$account->app_name}
+                        <a href="{$account->link}" target="_blank">{$account->app_name}</a>
                     </div>
                 </td>
                 <td>{$account->username}</td>
                 <td>
                     <div class="input-group input-group-sm">
                         <input type="password" value="********" class="form-control form-control-sm"
-                               id="pass_{$account->id}" readonly>
+                               id="pass_{$account->id}" readonly data-password="{$account->password}">
                         <button class="btn btn-outline-secondary password-toggle" type="button"
                                 data-target="#pass_{$account->id}">
                             <i class="bi bi-eye"></i>
@@ -35,15 +37,72 @@
                 </td>
                 <td>{$account->last_updated|date:'d/m/Y'}</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary" title="Modifier" data-bs-toggle="tooltip">
+                    <button class="btn btn-sm btn-outline-primary edit-account" title="Modifier"
+                            data-bs-toggle="modal" data-bs-target="#editAccountModal"
+                            data-account-id="{$account->id}"
+                            data-app-id="{$account->app_id}"
+                            data-username="{$account->username}"
+                            data-password="{$account->password}">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" title="Supprimer" data-bs-toggle="tooltip">
+                    <button class="btn btn-sm btn-outline-danger delete-account" title="Supprimer"
+                            data-account-id="{$account->id}">
                         <i class="bi bi-trash"></i>
                     </button>
+                    <button class="btn btn-sm btn-outline-info share-account" title="Partager"
+                            data-bs-toggle="modal" data-bs-target="#sharePasswordModal"
+                            data-account-id="{$account->id}">
+                        <i class="bi bi-share"></i>
+                    </button>
                 </td>
+            </tr>
+        {else}
+            <tr>
+                <td colspan="5" class="text-center">Aucun compte trouvé.</td>
             </tr>
         {/foreach}
         </tbody>
     </table>
 </div>
+
+<script n:syntax=off nonce={$nonce}>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.edit-account').forEach(button => {
+            button.addEventListener('click', () => {
+                const modal = document.getElementById('editAccountModal');
+                modal.querySelector('#editAccountId').value = button.dataset.accountId;
+                modal.querySelector('#editAppSelect').value = button.dataset.appId;
+                modal.querySelector('#editAccountUsername').value = button.dataset.username;
+                modal.querySelector('#editAccountPassword').value = button.dataset.password;
+                modal.querySelector('#editCustomAppContainer').classList.toggle('d-none', button.dataset.appId !== 'other');
+            });
+        });
+
+        // Supprimer un compte
+        document.querySelectorAll('.delete-account').forEach(button => {
+            button.addEventListener('click', async () => {
+                if (!confirm('Voulez-vous vraiment supprimer ce compte ?')) return;
+                try {
+                    const response = await fetch(`/accounts/${button.dataset.accountId}/delete`, {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert('Erreur : ' + data.error);
+                    }
+                } catch (error) {
+                    alert('Erreur réseau : ' + error.message);
+                }
+            });
+        });
+
+        // Partager un compte
+        document.querySelectorAll('.share-account').forEach(button => {
+            button.addEventListener('click', () => {
+                document.getElementById('shareAccountId').value = button.dataset.accountId;
+            });
+        });
+    });
+</script>

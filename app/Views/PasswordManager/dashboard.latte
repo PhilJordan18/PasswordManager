@@ -1,6 +1,9 @@
 {varType string $title}
 {varType string $nonce}
 {varType string $activeSection}
+{varType array $accounts}
+{varType array $applications}
+{varType array $stats}
 
 {layout layouts/main.latte}
 
@@ -19,7 +22,7 @@
                     <div class="col-md-4">
                         {include 'layouts/components/dashboard/stats-card.latte', [
                         'title' => 'Mots de passe',
-                        'value' => '42',
+                        'value' => $stats.total,
                         'icon' => 'lock',
                         'color' => 'primary'
                         ]}
@@ -27,7 +30,7 @@
                     <div class="col-md-4">
                         {include 'layouts/components/dashboard/stats-card.latte', [
                         'title' => 'Faibles',
-                        'value' => '5',
+                        'value' => $stats.weak,
                         'icon' => 'alert-triangle',
                         'color' => 'danger'
                         ]}
@@ -35,7 +38,7 @@
                     <div class="col-md-4">
                         {include 'layouts/components/dashboard/stats-card.latte', [
                         'title' => 'Moyens',
-                        'value' => '12',
+                        'value' => $stats.medium,
                         'icon' => 'shield',
                         'color' => 'warning'
                         ]}
@@ -49,10 +52,10 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                {include 'layouts/components/dashboard/password-strength.latte'}
+                                {include 'layouts/components/dashboard/password-strength.latte', stats => $stats}
                             </div>
                             <div class="col-md-6">
-                                {include 'layouts/components/dashboard/lists/weak-passwords.latte'}
+                                {include 'layouts/components/dashboard/lists/weak-passwords.latte', accounts => $accounts}
                             </div>
                         </div>
                     </div>
@@ -78,7 +81,7 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        {include 'layouts/components/dashboard/tables/accounts-table.latte'}
+                        {include 'layouts/components/dashboard/tables/accounts-table.latte', accounts => $accounts}
                     </div>
                 </div>
 
@@ -90,10 +93,10 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-6">
-                                {include 'layouts/components/dashboard/password-strength.latte'}
+                                {include 'layouts/components/dashboard/password-strength.latte', stats => $stats}
                             </div>
                             <div class="col-md-6">
-                                {include 'layouts/components/dashboard/lists/weak-passwords.latte'}
+                                {include 'layouts/components/dashboard/lists/weak-passwords.latte', accounts => $accounts}
                             </div>
                         </div>
                     </div>
@@ -118,18 +121,18 @@
                         <h5 class="mb-0">Paramètres du compte</h5>
                     </div>
                     <div class="card-body">
-                        <form>
+                        <form id="settingsForm">
                             <div class="mb-3">
                                 <label class="form-label">Nom d'utilisateur</label>
-                                <input type="text" class="form-control" value="utilisateur123">
+                                <input type="text" class="form-control" name="username" value="philjordan18">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Email</label>
-                                <input type="email" class="form-control" value="email@exemple.com">
+                                <input type="email" class="form-control" name="email" value="philjordan18@gmail.com">
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Mot de passe</label>
-                                <input type="password" class="form-control" placeholder="Laisser vide pour ne pas changer">
+                                <label class="form-label">Nouveau mot de passe</label>
+                                <input type="password" class="form-control" name="password" placeholder="Laisser vide pour ne pas changer">
                             </div>
                             <button type="submit" class="btn btn-primary">Enregistrer</button>
                         </form>
@@ -140,14 +143,17 @@
     </div>
 
     {if $activeSection === 'passwords'}
-        {include 'layouts/components/dashboard/modals/add-account.latte'}
+        {include 'layouts/components/dashboard/modals/add-account.latte', applications => $applications}
+        {include 'layouts/components/dashboard/modals/edit-account.latte', applications => $applications}
+        {include 'layouts/components/dashboard/modals/share-password.latte'}
+        {include 'layouts/components/dashboard/modals/retrieve-password.latte'}
     {/if}
 
-    <script nonce={$nonce}>
+    <script n:syntax=off nonce={$nonce}>
         document.addEventListener('DOMContentLoaded', () => {
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
-            tooltipTriggerList.map(function (tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
+            tooltipTriggerList.forEach(tooltipTriggerEl => {
+                new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
             const passwordToggles = document.querySelectorAll('.password-toggle');
@@ -155,15 +161,14 @@
                 toggle.addEventListener('click', () => {
                     const target = document.querySelector(toggle.dataset.target);
                     const icon = toggle.querySelector('i');
-
                     if (target.type === 'password') {
                         target.type = 'text';
-                        icon.classList.remove('bi-eye');
-                        icon.classList.add('bi-eye-slash');
+                        icon.classList.replace('bi-eye', 'bi-eye-slash');
+                        target.value = target.dataset.password;
                     } else {
                         target.type = 'password';
-                        icon.classList.remove('bi-eye-slash');
-                        icon.classList.add('bi-eye');
+                        icon.classList.replace('bi-eye-slash', 'bi-eye');
+                        target.value = '********';
                     }
                 });
             });
@@ -172,6 +177,14 @@
             if (sidebarToggle) {
                 sidebarToggle.addEventListener('click', () => {
                     document.getElementById('sidebar').classList.toggle('d-none');
+                });
+            }
+
+            const settingsForm = document.getElementById('settingsForm');
+            if (settingsForm) {
+                settingsForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    alert('Mise à jour des paramètres non implémentée');
                 });
             }
         });
