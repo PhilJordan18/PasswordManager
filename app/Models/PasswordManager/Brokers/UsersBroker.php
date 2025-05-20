@@ -6,6 +6,7 @@ use Exception;
 use Models\PasswordManager\Entities\Users;
 use stdClass;
 use Zephyrus\Database\DatabaseBroker;
+use Zephyrus\Security\Cryptography;
 
 class UsersBroker extends DatabaseBroker
 {
@@ -24,8 +25,7 @@ class UsersBroker extends DatabaseBroker
      */
     public function insert(Users $user): int
     {
-
-        $hashedPassword = password_hash($user->password, PASSWORD_BCRYPT);
+        $hashedPassword = Cryptography::hash($user->password, PASSWORD_BCRYPT);
         $result = $this->selectSingle(
             "INSERT INTO users(firstname, lastname, username, password, email, phone_number, master_key, public_key, private_key, created_at, updated_at)
              VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
@@ -47,7 +47,7 @@ class UsersBroker extends DatabaseBroker
 
     public function update(Users $old, Users $new): int
     {
-        $updatedPassword = !empty($new->password) ? password_hash($new->password, PASSWORD_BCRYPT) : $old->password;
+        $updatedPassword = !empty($new->password) ? Cryptography::hash($new->password, PASSWORD_BCRYPT) : $old->password;
         $this->query(
             "UPDATE users 
              SET firstname = ?, lastname = ?, username = ?, password = ?, email = ?, phone_number = ?, master_key = ?, public_key = ?, private_key = ?, updated_at = NOW()

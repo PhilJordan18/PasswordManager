@@ -51,7 +51,7 @@ class DashboardController extends Controller
         // Récupérer les comptes
         $accounts = [];
         try {
-            $accounts = AccountServices::getAllForUser($userId, 'Password19.'); // Remplace par le mot de passe réel ou une méthode pour récupérer le master key
+            $accounts = AccountServices::getAllForUser($userId, 'Password19.');
         } catch (Exception $e) {
             Debugger::barDump($e->getMessage(), 'Erreur récupération comptes');
         }
