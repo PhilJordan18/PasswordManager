@@ -13,6 +13,7 @@ use Zephyrus\Network\Response;
 use Zephyrus\Network\Router\Get;
 use Zephyrus\Network\Router\Post;
 use Zephyrus\Application\Form;
+use Zephyrus\Core\Session;
 
 class DashboardController extends Controller
 {
@@ -38,6 +39,23 @@ class DashboardController extends Controller
     public function settings(): Response
     {
         return $this->renderSection('settings');
+    }
+
+    #[Post("/logout")]
+    public function logout(): Response
+    {
+        try {
+            Session::destroy();
+            if (is_writable(Debugger::$logDirectory)) {
+                Debugger::log('Utilisateur déconnecté', ILogger::INFO);
+            }
+            return $this->json(['success' => true, 'message' => 'Déconnexion réussie'], 200);
+        } catch (Exception $e) {
+            if (is_writable(Debugger::$logDirectory)) {
+                Debugger::log("Erreur déconnexion: {$e->getMessage()}", ILogger::ERROR);
+            }
+            return $this->json(['success' => false, 'error' => $e->getMessage()], 400);
+        }
     }
 
     private function renderSection(string $activeSection): Response
